@@ -13,7 +13,7 @@ class SurveyResponse(models.Model):
     q8 = models.IntegerField(verbose_name='The technology used in the course (if applicable) was reliable.')
     q9 = models.IntegerField(verbose_name='How likely are you to recommend this course to others?')
     comments = models.TextField(blank=True, null=True, verbose_name='Additional comments or suggestions')
-
+    # cluster = models.IntegerField(null=True)
     def __str__(self):
         return f"Participant {self.participant_id} - {self.q9} / 5"
 

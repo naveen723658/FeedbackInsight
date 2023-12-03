@@ -9,6 +9,8 @@ from sklearn.preprocessing import StandardScaler
 from .models import SurveyResponse
 import pandas as pd
 import json
+
+
 def index(request):
     if request.method == "POST":
         form = FeedbackSurveyForm(request.POST)
@@ -69,7 +71,7 @@ def result(request):
     df = pd.DataFrame(list(responses.values()))
 
     # Select relevant Likert scale columns for clustering
-    likert_columns = [f'q{i}' for i in range(1, 10)]
+    likert_columns = [f"q{i}" for i in range(1, 10)]
     data = df[likert_columns]
 
     # Standardize the data
@@ -77,17 +79,13 @@ def result(request):
     data_scaled = scaler.fit_transform(data)
 
     # Apply k-means clustering
-    kmeans = KMeans(n_clusters=5)  # Adjust the number of clusters as needed
-    df['cluster'] = kmeans.fit_predict(data_scaled)
- 
-    cluster_avg_ratings = df.groupby('cluster')[likert_columns].mean()
+    kmeans = KMeans(n_clusters=5, n_init=10)  # Adjust the number of clusters as needed
+    df["cluster"] = kmeans.fit_predict(data_scaled)
+    print(df)
+    cluster_median_ratings = df.groupby("cluster")[likert_columns].median()
+    print(cluster_median_ratings)
+    cluster_median_ratings_dict = cluster_median_ratings.to_dict()
     # Calculate average ratings for each cluster
-    cluster_avg_ratings_dict = cluster_avg_ratings.to_dict()
+    context = {"cluster_avg_ratings": json.dumps(cluster_median_ratings_dict)}
+    return render(request, "result.html", context)
 
-    # Pass the clustering results to the template as JSON
-    context = {'cluster_avg_ratings': json.dumps(cluster_avg_ratings_dict)}
-    return render(request, 'result.html', context)
-
-
-# def result(request):
-#     return HttpDashView.as_view(dash_app)(request)
