@@ -1,0 +1,34 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="mb-4 text-center">Feedback Survey</h2>
+          {% if messages %}
+          <div class="alert alert-danger" role="alert">
+            {% for message in messages %} {{ message }} {% endfor %}
+          </div>
+          {% endif %}
+          <form method="post" action="{% url 'index' %}">
+            {% csrf_token %} {% for question in form.visible_fields %}
+            <div class="form-group mb-4">
+              <label class="form-label">{{ question.label }}</label>
+              {% for choice in question %}
+              <div class="form-check">
+                {{ choice }}
+                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                  {{ choice.label }}
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
