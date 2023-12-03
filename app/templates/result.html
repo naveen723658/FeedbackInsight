@@ -1,0 +1,52 @@
+{% extends 'base.html' %} {% load chart_tags %} {% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Survey Result with Clustering</h2>
+
+  <!-- Display cluster average ratings using a bar chart -->
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Average Ratings for Each Cluster</h5>
+          <div>
+            <canvas id="myChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var clusterAvgRatings = {{ cluster_avg_ratings|safe }};
+
+    // Extract cluster labels and ratings
+    var clusterLabels = Object.keys(clusterAvgRatings);
+    var clusterRatings = Object.values(clusterAvgRatings);
+
+    var ctx = document.getElementById('myChart').getContext('2d');
+  var clusterChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: clusterLabels,
+      datasets: [{% for index, ratings in clusterRatings.items %}{
+        label: `Cluster ${index + 1}`,
+        data: {{ ratings|safe }},
+        backgroundColor: `rgba(75, 192, 192, ${0.2 + index * 0.2})`,
+        borderColor: `rgba(75, 192, 192, ${1 - index * 0.2})`,
+        borderWidth: 1
+      }{% if not forloop.last %},{% endif %}{% endfor %}]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 5  // Assuming Likert scale from 1 to 5
+        }
+      }
+    }
+  });
+</script>
+
+{% endblock %}

@@ -4,7 +4,11 @@ from django.contrib import messages
 from .forms import FeedbackSurveyForm
 from .models import SurveyResponse
 
-
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from .models import SurveyResponse
+import pandas as pd
+import json
 def index(request):
     if request.method == "POST":
         form = FeedbackSurveyForm(request.POST)
@@ -55,3 +59,35 @@ def index(request):
 
 def success(request):
     return render(request, "success.html")
+
+
+def result(request):
+    # Fetch all survey responses from the database
+    responses = SurveyResponse.objects.all()
+
+    # Create a DataFrame from the survey responses
+    df = pd.DataFrame(list(responses.values()))
+
+    # Select relevant Likert scale columns for clustering
+    likert_columns = [f'q{i}' for i in range(1, 10)]
+    data = df[likert_columns]
+
+    # Standardize the data
+    scaler = StandardScaler()
+    data_scaled = scaler.fit_transform(data)
+
+    # Apply k-means clustering
+    kmeans = KMeans(n_clusters=5)  # Adjust the number of clusters as needed
+    df['cluster'] = kmeans.fit_predict(data_scaled)
+ 
+    cluster_avg_ratings = df.groupby('cluster')[likert_columns].mean()
+    # Calculate average ratings for each cluster
+    cluster_avg_ratings_dict = cluster_avg_ratings.to_dict()
+
+    # Pass the clustering results to the template as JSON
+    context = {'cluster_avg_ratings': json.dumps(cluster_avg_ratings_dict)}
+    return render(request, 'result.html', context)
+
+
+# def result(request):
+#     return HttpDashView.as_view(dash_app)(request)
