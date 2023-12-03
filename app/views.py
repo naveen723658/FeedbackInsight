@@ -6,7 +6,6 @@ from .models import SurveyResponse
 
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from .models import SurveyResponse
 import pandas as pd
 import json
 
@@ -81,9 +80,7 @@ def result(request):
     # Apply k-means clustering
     kmeans = KMeans(n_clusters=5, n_init=10)  # Adjust the number of clusters as needed
     df["cluster"] = kmeans.fit_predict(data_scaled)
-    print(df)
     cluster_median_ratings = df.groupby("cluster")[likert_columns].median()
-    print(cluster_median_ratings)
     cluster_median_ratings_dict = cluster_median_ratings.to_dict()
     # Calculate average ratings for each cluster
     context = {"cluster_avg_ratings": json.dumps(cluster_median_ratings_dict)}
